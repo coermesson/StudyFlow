@@ -11,12 +11,12 @@ export class Materia {
 
   public static build({ nome, cursoId }: MateriaDtoCreate) {
     const props: MateriaProps = {
-      id: 0, // 0 ou undefined porque será gerado pelo banco (auto increment)
+      id: "",  // ID será gerado pelo banco
       nome,
       cursoId,
     };
     return new Materia(props);
-  }
+  }
 
   public static assemble(id: string, nome: string, cursoId: number) {
     const props: MateriaProps = {

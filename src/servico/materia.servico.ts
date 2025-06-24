@@ -1,5 +1,7 @@
 import { MateriaDao } from "../dao/Materia.dao";
-import { MateriaDtoCreate } from "../dto/Materia.dto";
+// Importe MateriaListarDto aqui, pois será o tipo de retorno do listar
+import { MateriaDtoCreate, MateriaListarDto } from "../dto/Materia.dto";
+// Assumindo que Materia e MateriaProps são o seu modelo de domínio
 import { Materia, MateriaProps } from "../modelo/Materia";
 
 export class MateriaServico {
@@ -16,9 +18,13 @@ export class MateriaServico {
     return materia?.props ?? null;
   }
 
-  public async listar(): Promise<MateriaProps[] | null> {
-    const materias = await this.materiaDao.listar();
-    return materias?.map(m => m.props) ?? null;
+  /**
+   * Lista todas as matérias.
+   * Retorna um array de MateriaListarDto ou null se não houver matérias.
+   */
+  public async listar(): Promise<MateriaListarDto[] | null> { // <--- ALTEÇÃO AQUI NO TIPO DE RETORNO
+    const materias = await this.materiaDao.listar(); // Isso já retorna MateriaListarDto[] | null
+    return materias; // <--- ALTEÇÃO AQUI: Retorne diretamente o resultado, pois MateriaListarDto não tem 'props'
   }
 
   public async atualizar(id: string, dados: Partial<MateriaProps>): Promise<MateriaProps | null> {
