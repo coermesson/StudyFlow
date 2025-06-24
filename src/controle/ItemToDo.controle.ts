@@ -42,7 +42,7 @@ export class ItemToDoControle {
             return res.status(500).json({ mensagem: error });
         }
     }
- /*
+/*
     public async deletar(req: Request, res: Response) {
         const { id } = req.params;
         try {
