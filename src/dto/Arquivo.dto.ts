@@ -7,7 +7,7 @@ export class ArquivoDtoCreate {
 
   @IsNotEmpty()
   @IsString()
-  materiaId: string;  // UUID como string
+  materiaId: string;
 }
 
 export type ArquivoListarDto = {

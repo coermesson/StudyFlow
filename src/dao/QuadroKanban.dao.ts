@@ -4,9 +4,7 @@ import conexao from "../util/conexao";
 import { GenericDao } from "./Generic.dao";
 
 export class QuadroKanbanDao implements GenericDao<QuadroKanban> {
-  atualizar(id: string, item: Partial<QuadroKanban>): Promise<QuadroKanban | null> {
-    throw new Error("Method not implemented.");
-  }
+
   public async salvar(quadro: QuadroKanban): Promise<boolean> {
     try {
       const { nome, materiaId } = quadro;
@@ -32,7 +30,7 @@ export class QuadroKanbanDao implements GenericDao<QuadroKanban> {
 
       const { nome, materiaId } = result;
       return QuadroKanban.assemble({
-        id: result.id.toString(), // convertendo para string por causa do model
+        id: result.id.toString(),
         nome,
         materiaId,
       });
@@ -42,36 +40,37 @@ export class QuadroKanbanDao implements GenericDao<QuadroKanban> {
     }
   }
 
-  /*public async atualizar(id: string, item: Partial<QuadroKanban>): Promise<QuadroKanban | null> {
+  public async atualizar(id: string, item: Partial<QuadroKanban>): Promise<QuadroKanban | null> {
     try {
-      const campos: string[] = [];
-      const valores: any[] = [];
+      const fields: string[] = [];
+      const values: any[] = [];
 
-      if (item.nome) {
-        campos.push("nome = ?");
-        valores.push(item.nome);
+      if (item.nome !== undefined) {
+        fields.push("nome = ?");
+        values.push(item.nome);
       }
 
       if (item.materiaId !== undefined) {
-        campos.push("materiaId = ?");
-        valores.push(item.materiaId);
+        fields.push("materiaId = ?");
+        values.push(item.materiaId);
       }
 
-      if (campos.length === 0) return null;
+      if (fields.length === 0) {
+        return await this.buscar(id);
+      }
 
-      valores.push(id);
-
+      values.push(id);
       await conexao.query(
-        UPDATE QuadroKanban SET ${campos.join(", ")} WHERE id = ?,
-        valores
+        `UPDATE QuadroKanban SET ${fields.join(", ")} WHERE id = ?`,
+        values
       );
 
-      return this.buscar(id);
+      return await this.buscar(id);
     } catch (error) {
       console.error("Erro ao atualizar QuadroKanban:", error);
       throw error;
     }
-  }*/
+  }
 
   public async delete(id: string): Promise<boolean> {
     try {

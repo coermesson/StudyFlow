@@ -43,16 +43,5 @@ export class ListaToDoControle {
         }
     }
 
-    /*public async delete(req: Request, res: Response) {
-        const { id } = req.params;
-        try {
-            const linhasAfetadas = await this.listaService.delete(id);
-            if (linhasAfetadas === 0) {
-                return res.status(404).json({ mensagem: "Lista não encontrada" });
-            }
-            return res.status(200).json({ mensagem: "Lista deletada com sucesso" });
-        } catch (error) {
-            return res.status(500).json({ mensagem: error });
-        }
-    }*/
+    
 }
