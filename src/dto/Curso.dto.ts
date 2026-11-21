@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class CursoDtoCreate {
   @IsNotEmpty()
@@ -6,13 +6,13 @@ export class CursoDtoCreate {
   nome: string;
 
   @IsNotEmpty()
-  @IsInt()
-  usuarioId: number;
+  @IsUUID()
+  usuarioId: string;
 }
 
 export type CursoListarDto = {
   props: any;
   id: string;
   nome: string;
-  usuarioId: number;
+  usuarioId: string;
 };

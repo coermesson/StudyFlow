@@ -10,21 +10,21 @@ import { GenericDao } from "./Generic.dao";
 interface MateriaDBRow extends RowDataPacket {
   id: string;
   nome: string;
-  curso_id: number;
+  cursoId: string;
 }
 
 type MateriaUpdate = {
   nome?: string;
-  cursoId?: number;
+  cursoId?: string;
 };
 
 export class MateriaDao implements GenericDao<Materia> {
   public async salvar(materia: Materia): Promise<boolean> {
     try {
-      const { nome, cursoId } = materia;
+      const { id, nome, cursoId } = materia;
       await conexao.query(
-        `INSERT INTO Materia (nome, curso_id) VALUES (?, ?)`,
-        [nome, cursoId]
+        `INSERT INTO Materia (id, nome, cursoId) VALUES (?, ?, ?)`,
+        [id, nome, cursoId]
       );
       return true;
     } catch (error) {
@@ -41,9 +41,9 @@ export class MateriaDao implements GenericDao<Materia> {
       );
       if (!result) return null;
 
-      const { nome, curso_id } = result;
+      const { nome, cursoId } = result;
 
-      return Materia.assemble(id, nome, curso_id);
+      return Materia.assemble(id, nome, cursoId);
     } catch (error) {
       throw error;
     }
@@ -60,7 +60,8 @@ export class MateriaDao implements GenericDao<Materia> {
       }
 
       if (item.cursoId !== undefined) {
-        fields.push("curso_id = ?");
+        fields.push("cursoId = ?");
+        values.push(item.cursoId);
       }
 
       if (fields.length === 0) {
@@ -93,7 +94,7 @@ export class MateriaDao implements GenericDao<Materia> {
     try {
 
       const [materias] = await conexao.query<MateriaDBRow[]>(
-        `SELECT id, nome, curso_id FROM Materia`
+        `SELECT id, nome, cursoId FROM Materia`
       );
 
       if (!materias || materias.length === 0) return null;
@@ -102,7 +103,7 @@ export class MateriaDao implements GenericDao<Materia> {
       const materiasConvertidas: MateriaListarDto[] = materias.map(m => ({
         id: m.id,
         nome: m.nome,
-        cursoId: m.curso_id,
+        cursoId: m.cursoId,
       }));
 
       return materiasConvertidas;

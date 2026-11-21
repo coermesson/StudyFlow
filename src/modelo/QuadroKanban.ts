@@ -3,7 +3,7 @@ import { QuadroKanbanDtoCreate } from "../dto/QuadroKanban.dto"
 export type QuadroKanbanProps = {
     id: string,
     nome: string,
-    materiaId: number,
+    materiaId: string,
     created_at?: Date,
     updated_at?: Date
 }

@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class QuadroKanbanDtoCreate {
   @IsNotEmpty()
@@ -6,12 +6,12 @@ export class QuadroKanbanDtoCreate {
   nome: string;
 
   @IsNotEmpty()
-  @IsInt()
-  materiaId: number;
+  @IsUUID()
+  materiaId: string;
 }
 
 export type QuadroKanbanListarDto = {
   id: string;
   nome: string;
-  materiaId: number;
+  materiaId: string;
 };

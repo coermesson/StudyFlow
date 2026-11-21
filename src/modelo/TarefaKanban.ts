@@ -7,7 +7,7 @@ export type TarefaKanbanProps = {
     descricao: string,
     status: StatusTarefa,
     prioridade: PrioridadeTarefa,
-    quadroId: number,
+    quadroId: string,
     quadro?: QuadroKanban,
     created_at?: Date,
     updated_at?: Date

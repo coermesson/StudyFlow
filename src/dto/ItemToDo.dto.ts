@@ -1,4 +1,4 @@
-import { IsBoolean, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export class ItemToDoDtoCreate {
   @IsNotEmpty()
@@ -10,7 +10,7 @@ export class ItemToDoDtoCreate {
   feito: boolean;
 
   @IsNotEmpty()
-  @IsInt()
+  @IsString()
   listaId: string;
 }
 

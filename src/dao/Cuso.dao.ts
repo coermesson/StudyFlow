@@ -68,7 +68,7 @@ export class CursoDao implements GenericDao<Curso> {
 
   public async delete(id: string): Promise<boolean> {
     try {
-      await conexao.query('DELETE FROM Curso WHERE id = ?', [id]);
+      await conexao.query('DELETE FROM curso WHERE id = ?', [id]);
       return true;
     } catch (error) {
       throw error;

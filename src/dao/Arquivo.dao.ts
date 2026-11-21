@@ -64,7 +64,7 @@ export class ArquivoDao implements GenericDao<Arquivo> {
 
       if (campos.length === 0) return null;
 
-      valores.push(id); // O ID é sempre o último
+      valores.push(id);
 
       await conexao.query(
         `UPDATE Arquivo SET ${campos.join(", ")} WHERE id = ?`,

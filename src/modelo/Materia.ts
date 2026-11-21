@@ -1,9 +1,10 @@
+import crypto from "crypto";
 import { MateriaDtoCreate } from "../dto/Materia.dto";
 
 export type MateriaProps = {
   id: string;
   nome: string;
-  cursoId: number;
+  cursoId: string;
 };
 
 export class Materia {
@@ -11,14 +12,14 @@ export class Materia {
 
   public static build({ nome, cursoId }: MateriaDtoCreate) {
     const props: MateriaProps = {
-      id: "",  // ID será gerado pelo banco
+      id: crypto.randomUUID(),
       nome,
       cursoId,
     };
     return new Materia(props);
   }
 
-  public static assemble(id: string, nome: string, cursoId: number) {
+  public static assemble(id: string, nome: string, cursoId: string) {
     const props: MateriaProps = {
       id,
       nome,

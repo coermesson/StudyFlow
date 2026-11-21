@@ -8,7 +8,7 @@ export class CursoServico {
   public async salvar(dto: CursoDtoCreate): Promise<CursoProps> {
     const curso = Curso.build(dto);
     await this.cursoDao.salvar(curso);
-    return curso.props; // props deve ser público ou ter um getter
+    return curso.props; 
   }
 
   public async buscar(id: string): Promise<CursoProps | null> {

@@ -9,8 +9,8 @@ export class QuadroKanbanDao implements GenericDao<QuadroKanban> {
     try {
       const { nome, materiaId } = quadro;
       await conexao.query(
-        'INSERT INTO QuadroKanban (nome, materiaId) VALUES (?, ?)',
-        [nome, materiaId]
+        'INSERT INTO QuadroKanban (id, nome, materiaId) VALUES (?, ?, ?)',
+        [quadro.id, nome, materiaId]
       );
       return true;
     } catch (error) {

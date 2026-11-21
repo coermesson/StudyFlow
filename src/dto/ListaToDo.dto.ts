@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class ListaToDoDtoCreate {
   @IsNotEmpty()
@@ -6,7 +6,7 @@ export class ListaToDoDtoCreate {
   nome: string;
 
   @IsNotEmpty()
-  @IsInt()
+  @IsString()
   materiaId: string;
 }
 

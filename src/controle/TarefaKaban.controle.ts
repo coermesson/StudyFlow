@@ -58,24 +58,22 @@ export class TarefaKanbanControle {
     }
   }
 
-  public async atualizar(req: Request, res: Response) {
+ /* public async atualizar(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const dto = plainToInstance(TarefaKanbanDtoCreate, req.body);
-      const erros = await validate(dto);
+      const { titulo, descricao, status, prioridade, quadroId } = req.body;
 
-      if (erros.length > 0) {
-        return res.status(400).json({ errors: erros.map(err => err.constraints) });
-      }
+      const atualizado = await this.tarefaServico.atualizar({
+        id, titulo, descricao, status, prioridade, quadroId
+      });
 
-      const tarefaAtualizada = await this.tarefaServico.atualizar(id, dto);
-      if (!tarefaAtualizada) {
+      if (!atualizado) {
         return res.status(404).json({ mensagem: "Tarefa não encontrada" });
       }
 
-      return res.status(200).json(tarefaAtualizada);
+      return res.status(200).json({ mensagem: "Tarefa atualizada com sucesso" });
     } catch (error) {
       return res.status(500).json({ mensagem: error });
-      }
     }
+  }*/
 }

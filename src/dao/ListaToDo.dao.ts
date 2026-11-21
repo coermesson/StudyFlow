@@ -9,7 +9,7 @@ export class ListaToDoDao implements GenericDao<ListaToDo> {
         try {
             const { id, nome, materiaId } = lista;
             await conexao.query(
-                'INSERT INTO listaToDo(id, nome, materiaId) VALUES(?, ?, ?)',
+                'INSERT INTO listatodo(id, nome, materiaId) VALUES(?, ?, ?)',
                 [id, nome, materiaId]
             );
         } catch (error) {
@@ -21,7 +21,7 @@ export class ListaToDoDao implements GenericDao<ListaToDo> {
     public async buscar(id: string): Promise<ListaToDo | null> {
         try {
             const [[result]] = await conexao.query<RowDataPacket[]>(
-                'SELECT * FROM listaToDo WHERE id = ?',
+                'SELECT * FROM listatodo WHERE id = ?',
                 [id]
             );
 
@@ -53,7 +53,7 @@ export class ListaToDoDao implements GenericDao<ListaToDo> {
     public async listar(): Promise<ListaToDoListarDto[] | null> {
         try {
             const [listasDto] = await conexao.query<ListaToDoListarDto[] & RowDataPacket[]>(
-                'SELECT id, nome, materiaId FROM listaToDo'
+                'SELECT id, nome, materiaId FROM listatodo'
             );
 
             if (listasDto.length === 0) {

@@ -9,10 +9,10 @@ export class TarefaKanbanDao implements GenericDao<TarefaKanban> {
   }
   public async salvar(tarefa: TarefaKanban): Promise<boolean> {
     try {
-      const { titulo, descricao, status, prioridade, quadroId } = tarefa;
+      const { id, titulo, descricao, status, prioridade, quadroId } = tarefa;
       await conexao.query(
-        'INSERT INTO TarefaKanban (titulo, descricao, status, prioridade, quadroId) VALUES (?, ?, ?, ?, ?)',
-        [titulo, descricao, status, prioridade, quadroId]
+        'INSERT INTO TarefaKanban (id, titulo, descricao, status, prioridade, quadroId) VALUES (?, ?, ?, ?, ?, ?)',
+        [id, titulo, descricao, status, prioridade, quadroId]
       );
       return true;
     } catch (error) {

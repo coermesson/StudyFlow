@@ -4,7 +4,7 @@ import { CursoDtoCreate } from '../dto/Curso.dto';
 export type CursoProps = {
   id: string;
   nome: string;
-  usuarioId: number;
+  usuarioId: string;
 };
 
 export class Curso {
@@ -19,7 +19,7 @@ export class Curso {
     return new Curso(props);
   }
 
-  public static assemble(id: string, nome: string, usuarioId: number) {
+  public static assemble(id: string, nome: string, usuarioId: string) {
     const props: CursoProps = {
       id,
       nome,

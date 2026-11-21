@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export enum StatusTarefa {
   A_FAZER = 'a fazer',
@@ -30,8 +30,8 @@ export class TarefaKanbanDtoCreate {
   prioridade: PrioridadeTarefa;
 
   @IsNotEmpty()
-  @IsInt()
-  quadroId: number;
+  @IsUUID()
+  quadroId: string;
 }
 
 export type TarefaKanbanListarDto = {
@@ -40,5 +40,5 @@ export type TarefaKanbanListarDto = {
   descricao: string;
   status: string;
   prioridade: string;
-  quadroId: number;
+  quadroId: string;
 };

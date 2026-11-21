@@ -27,4 +27,6 @@ export class ListaToDoServico {
         const lista: ListaToDo | null = await this.listaToDoDao.buscar(id)
         return lista?.props ?? lista
     }
+
+
 }
