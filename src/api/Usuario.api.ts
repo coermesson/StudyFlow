@@ -16,7 +16,7 @@ export class UsuarioApi {
     }
 
     public addRotas() {
-        this.api.addRota("/usuarios", "POST", this.usuarioControle.salvar.bind(this.usuarioControle));
+        this.api.addRota("/usuarios", "POST", this.usuarioControle.salvar.bind(this.usuarioControle), true);
         this.api.addRota("/usuarios", "GET", this.usuarioControle.listar.bind(this.usuarioControle));
         this.api.addRota("/usuarios/:id", "GET", this.usuarioControle.buscar.bind(this.usuarioControle));
         this.api.addRota("/usuarios/:id", "PUT", this.usuarioControle.atualizar.bind(this.usuarioControle));

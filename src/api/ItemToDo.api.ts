@@ -21,7 +21,7 @@ export class ItemToDoApi {
         this.api.addRota("/itens", "POST", this.itemToDoControle.adicionar.bind(this.itemToDoControle));
         this.api.addRota("/itens", "GET", this.itemToDoControle.listar.bind(this.itemToDoControle));
         this.api.addRota("/itens/:id", "GET", this.itemToDoControle.buscar.bind(this.itemToDoControle));
-        //this.api.addRota("/itens/:id", "DELETE", this.itemToDoControle.deletar.bind(this.itemToDoControle));
-        // Adicione aqui mais rotas se necessário, como PUT, PATCH, etc.
+        this.api.addRota("/itens/:id", "PUT", this.itemToDoControle.atualizar.bind(this.itemToDoControle));
+        this.api.addRota("/itens/:id", "DELETE", this.itemToDoControle.deletar.bind(this.itemToDoControle));
     }
 }

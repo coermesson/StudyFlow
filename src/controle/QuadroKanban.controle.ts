@@ -2,76 +2,105 @@ import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import { Request, Response } from "express";
 import { QuadroKanbanDao } from "../dao/QuadroKanban.dao";
-import { QuadroKanbanDtoCreate } from "../dto/QuadroKanban.dto";
+import { QuadroKanbanDtoCreate, QuadroKanbanDtoUpdate } from "../dto/QuadroKanban.dto";
 import { QuadroKanbanServico } from "../servico/QuadroKanban.servico";
 
 export class QuadroKanbanControle {
     private readonly quadroServico = new QuadroKanbanServico(new QuadroKanbanDao());
 
     public async adicionar(req: Request, res: Response) {
-        const dto = plainToInstance(QuadroKanbanDtoCreate, req.body);
-        const erros = await validate(dto);
-
-        if (erros.length > 0) {
-            return res.status(400).json({ erros: erros.map(e => e.constraints) });
-        }
-
         try {
-            const quadro = await this.quadroServico.salvar(dto);
+            if (req.body === null || typeof req.body !== "object" || Array.isArray(req.body)) {
+                return res.status(400).json({ erro: "Corpo da requisição inválido" });
+            }
+
+            const dto = plainToInstance(QuadroKanbanDtoCreate, req.body);
+            const erros = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
+            if (erros.length > 0) {
+                return res.status(400).json({
+                    erro: "Dados inválidos",
+                    detalhes: erros.flatMap((e) => Object.entries(e.constraints ?? {}).map(([tipo, mensagem]) =>
+                        tipo === "whitelistValidation" ? `O campo ${e.property} não é permitido.` : mensagem)),
+                });
+            }
+
+            const quadro = await this.quadroServico.salvar(dto, res.locals.usuarioId as string);
+            if (!quadro) return res.status(404).json({ erro: "Matéria não encontrada" });
             return res.status(201).json(quadro);
         } catch (error) {
-            return res.status(500).json({ mensagem: error });
+            console.error("Falha inesperada ao cadastrar quadro Kanban", error instanceof Error ? error.name : "Erro desconhecido");
+            return res.status(500).json({ erro: "Erro interno do servidor" });
         }
     }
 
     public async listar(req: Request, res: Response) {
         try {
-            const quadros = await this.quadroServico.listar();
-            return res.status(200).json(quadros);
+            const quadros = await this.quadroServico.listar(res.locals.usuarioId as string);
+            return res.status(200).json(quadros ?? []);
         } catch (error) {
-            return res.status(500).json({ mensagem: error });
+            console.error("Falha inesperada ao listar quadros Kanban", error instanceof Error ? error.name : "Erro desconhecido");
+            return res.status(500).json({ erro: "Erro interno do servidor" });
         }
     }
 
     public async buscar(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const quadro = await this.quadroServico.buscar(id);
+            const quadro = await this.quadroServico.buscar(id, res.locals.usuarioId as string);
+            if (!quadro) return res.status(404).json({ erro: "Quadro não encontrado" });
             return res.status(200).json(quadro);
         } catch (error) {
-            return res.status(500).json({ mensagem: error });
+            console.error("Falha inesperada ao buscar quadro Kanban", error instanceof Error ? error.name : "Erro desconhecido");
+            return res.status(500).json({ erro: "Erro interno do servidor" });
         }
     }
 
     public async deletar(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const deletado = await this.quadroServico.deletar(id);
+            const deletado = await this.quadroServico.deletar(id, res.locals.usuarioId as string);
 
             if (!deletado) {
-                return res.status(404).json({ mensagem: "Quadro não encontrado" });
+                return res.status(404).json({ erro: "Quadro não encontrado" });
             }
 
-            return res.status(200).json({ mensagem: "Quadro deletado com sucesso" });
+            return res.status(204).send();
         } catch (error) {
-            return res.status(500).json({ mensagem: error });
+            console.error("Falha inesperada ao excluir quadro Kanban", error instanceof Error ? error.name : "Erro desconhecido");
+            return res.status(500).json({ erro: "Erro interno do servidor" });
         }
     }
 
-    /*public async atualizar(req: Request, res: Response) {
+    public async atualizar(req: Request, res: Response) {
         try {
-            const { id } = req.params;
-            const { nome, materiaId } = req.body;
-
-            const atualizado = await this.quadroServico.atualizar({ id, nome, materiaId });
-
-            if (!atualizado) {
-                return res.status(404).json({ mensagem: "Quadro não encontrado" });
+            if (req.body === null || typeof req.body !== "object" || Array.isArray(req.body)) {
+                return res.status(400).json({ erro: "Corpo da requisição inválido" });
             }
 
-            return res.status(200).json({ mensagem: "Quadro atualizado com sucesso" });
+            const dto = plainToInstance(QuadroKanbanDtoUpdate, req.body);
+            const erros = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
+            if (erros.length > 0) {
+                return res.status(400).json({
+                    erro: "Dados inválidos",
+                    detalhes: erros.flatMap((e) => Object.entries(e.constraints ?? {}).map(([tipo, mensagem]) =>
+                        tipo === "whitelistValidation" ? `O campo ${e.property} não é permitido.` : mensagem)),
+                });
+            }
+            if (dto.nome === undefined && dto.materiaId === undefined) {
+                return res.status(400).json({ erro: "Nenhum campo atualizável informado" });
+            }
+
+            const { id } = req.params;
+            const atualizado = await this.quadroServico.atualizar(id, dto, res.locals.usuarioId as string);
+
+            if (!atualizado) {
+                return res.status(404).json({ erro: "Quadro não encontrado" });
+            }
+
+            return res.status(200).json(atualizado);
         } catch (error) {
-            return res.status(500).json({ mensagem: error });
+            console.error("Falha inesperada ao atualizar quadro Kanban", error instanceof Error ? error.name : "Erro desconhecido");
+            return res.status(500).json({ erro: "Erro interno do servidor" });
         }
-    }*/
+    }
 }

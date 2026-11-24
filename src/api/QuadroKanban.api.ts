@@ -21,7 +21,7 @@ export class QuadroKanbanApi {
     this.api.addRota("/quadros-kanban", "POST", this.quadroKanbanControle.adicionar.bind(this.quadroKanbanControle));
     this.api.addRota("/quadros-kanban", "GET", this.quadroKanbanControle.listar.bind(this.quadroKanbanControle));
     this.api.addRota("/quadros-kanban/:id", "GET", this.quadroKanbanControle.buscar.bind(this.quadroKanbanControle));
-    //this.api.addRota("/quadros-kanban/:id", "PUT", this.quadroKanbanControle.atualizar.bind(this.quadroKanbanControle));/
+    this.api.addRota("/quadros-kanban/:id", "PUT", this.quadroKanbanControle.atualizar.bind(this.quadroKanbanControle));
     this.api.addRota("/quadros-kanban/:id", "DELETE", this.quadroKanbanControle.deletar.bind(this.quadroKanbanControle));
   }
 }

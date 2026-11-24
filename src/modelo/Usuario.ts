@@ -1,32 +1,31 @@
 import crypto from 'crypto';
-import { UsuarioDtoCreate } from "../dto/Usuario.dto";
 
 export type UsuarioProps = {
   id: string;
   nome: string;
   email: string;
-  senha: string;
+  senhaHash: string;
 };
 
 export class Usuario {
   private constructor(readonly props: UsuarioProps) {}
 
-  public static build({ nome, email, senha }: UsuarioDtoCreate): Usuario {
+  public static build({ nome, email, senhaHash }: Omit<UsuarioProps, "id">): Usuario {
     const props: UsuarioProps = {
       id: crypto.randomUUID(),
       nome,
       email,
-      senha,
+      senhaHash,
     };
     return new Usuario(props);
   }
 
-  public static assemble(id: string, nome: string, email: string, senha: string): Usuario {
+  public static assemble(id: string, nome: string, email: string, senhaHash: string): Usuario {
     const props: UsuarioProps = {
       id,
       nome,
       email,
-      senha,
+      senhaHash,
     };
     return new Usuario(props);
   }
@@ -43,7 +42,7 @@ export class Usuario {
     return this.props.email;
   }
 
-  public get senha(): string {
-    return this.props.senha;
+  public get senhaHash(): string {
+    return this.props.senhaHash;
   }
 }

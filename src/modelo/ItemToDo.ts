@@ -1,4 +1,5 @@
 import { ListaToDo } from "./ListaToDo"
+import { ItemToDoDtoCreate } from "../dto/ItemToDo.dto";
 
 export type ItemToDoProps = {
     id: string,
@@ -14,11 +15,11 @@ export class ItemToDo {
 
     private constructor(readonly props: ItemToDoProps) { }
 
-    public static build({ descricao, listaId }: { descricao: string, listaId: string }) {
+    public static build({ descricao, feito, listaId }: ItemToDoDtoCreate) {
         return new ItemToDo({
             id: crypto.randomUUID().toString(),
             descricao,
-            feito: false,
+            feito,
             listaId
         })
     }

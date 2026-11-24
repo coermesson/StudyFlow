@@ -21,5 +21,7 @@ export class ListaToDoApi {
         this.api.addRota("/listas", "POST", this.listaToDoControle.adicionar.bind(this.listaToDoControle));
         this.api.addRota("/listas", "GET", this.listaToDoControle.listar.bind(this.listaToDoControle));
         this.api.addRota("/listas/:id", "GET", this.listaToDoControle.buscar.bind(this.listaToDoControle));
+        this.api.addRota("/listas/:id", "PUT", this.listaToDoControle.atualizar.bind(this.listaToDoControle));
+        this.api.addRota("/listas/:id", "DELETE", this.listaToDoControle.deletar.bind(this.listaToDoControle));
     }
 }

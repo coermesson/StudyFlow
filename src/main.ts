@@ -6,6 +6,7 @@ import { ArquivoApi } from './api/Arquivo.api';
 import { CursoApi } from './api/Curso.api';
 import { MateriaApi } from './api/Materia.api';
 import { UsuarioApi } from './api/Usuario.api';
+import { AuthApi } from './api/Auth.api';
 
 
 import { ItemToDoApi } from './api/ItemToDo.api';
@@ -20,6 +21,7 @@ function main() {
 
     ListaToDoApi.build(api);
     UsuarioApi.build(api);
+    AuthApi.build(api);
     CursoApi.build(api);
     MateriaApi.build(api);
     ArquivoApi.build(api);
