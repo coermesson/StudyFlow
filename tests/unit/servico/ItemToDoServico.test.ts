@@ -5,11 +5,17 @@ import { ItemToDo } from "../../../src/modelo/ItemToDo";
 import { ItemToDoServico } from "../../../src/servico/ItemToDo.servico";
 
 describe("ItemToDoServico", () => {
-  const dao = { salvar: vi.fn(), listar: vi.fn(), buscar: vi.fn(), atualizar: vi.fn(), delete: vi.fn() };
+  const dao = {
+    salvar: vi.fn<ItemToDoDao["salvar"]>(),
+    listar: vi.fn<ItemToDoDao["listar"]>(),
+    buscar: vi.fn<ItemToDoDao["buscar"]>(),
+    atualizar: vi.fn<ItemToDoDao["atualizar"]>(),
+    delete: vi.fn<ItemToDoDao["delete"]>(),
+  } satisfies ItemToDoDao;
   const mocks = { "ItemToDoDao.salvar": dao.salvar, "ItemToDoDao.listar": dao.listar, "ItemToDoDao.buscar": dao.buscar,
     "ItemToDoDao.atualizar": dao.atualizar, "ItemToDoDao.delete": dao.delete };
   let servico: ItemToDoServico;
-  beforeEach(() => { vi.resetAllMocks(); servico = new ItemToDoServico(dao as unknown as ItemToDoDao); });
+  beforeEach(() => { vi.resetAllMocks(); servico = new ItemToDoServico(dao); });
   afterEach(() => {
     console.log(`\nChamadas das dependências: ${expect.getState().currentTestName}`);
     console.table(Object.entries(mocks).map(([dependencia, mock]) => ({ dependencia, chamadas: mock.mock.calls.length })));
@@ -32,6 +38,12 @@ describe("ItemToDoServico", () => {
     it("retorna itens da dependência", async () => {
       const rows = [{ id: "i1", descricao: "Ler", feito: false, listaId: "l1" }]; dao.listar.mockResolvedValue(rows);
       await expect(servico.listar("u1")).resolves.toBe(rows); expect(dao.listar).toHaveBeenCalledExactlyOnceWith("u1");
+    });
+    it("retorna lista vazia quando DAO retorna []", async () => {
+      dao.listar.mockResolvedValue([]);
+
+      await expect(servico.listar("u1")).resolves.toEqual([]);
+      expect(dao.listar).toHaveBeenCalledExactlyOnceWith("u1");
     });
     it("preserva null quando não há resultados", async () => {
       dao.listar.mockResolvedValue(null); await expect(servico.listar("u1")).resolves.toBeNull();

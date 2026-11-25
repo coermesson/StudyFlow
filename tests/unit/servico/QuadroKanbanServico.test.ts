@@ -5,11 +5,17 @@ import { QuadroKanban } from "../../../src/modelo/QuadroKanban";
 import { QuadroKanbanServico } from "../../../src/servico/QuadroKanban.servico";
 
 describe("QuadroKanbanServico", () => {
-  const dao = { salvar: vi.fn(), buscar: vi.fn(), listar: vi.fn(), atualizar: vi.fn(), delete: vi.fn() };
+  const dao = {
+    salvar: vi.fn<QuadroKanbanDao["salvar"]>(),
+    buscar: vi.fn<QuadroKanbanDao["buscar"]>(),
+    listar: vi.fn<QuadroKanbanDao["listar"]>(),
+    atualizar: vi.fn<QuadroKanbanDao["atualizar"]>(),
+    delete: vi.fn<QuadroKanbanDao["delete"]>(),
+  } satisfies QuadroKanbanDao;
   const mocks = { "QuadroKanbanDao.salvar": dao.salvar, "QuadroKanbanDao.buscar": dao.buscar, "QuadroKanbanDao.listar": dao.listar,
     "QuadroKanbanDao.atualizar": dao.atualizar, "QuadroKanbanDao.delete": dao.delete };
   let servico: QuadroKanbanServico;
-  beforeEach(() => { vi.resetAllMocks(); servico = new QuadroKanbanServico(dao as unknown as QuadroKanbanDao); });
+  beforeEach(() => { vi.resetAllMocks(); servico = new QuadroKanbanServico(dao); });
   afterEach(() => {
     console.log(`\nChamadas das dependências: ${expect.getState().currentTestName}`);
     console.table(Object.entries(mocks).map(([dependencia, mock]) => ({ dependencia, chamadas: mock.mock.calls.length })));
@@ -43,6 +49,12 @@ describe("QuadroKanbanServico", () => {
     it("mapeia quadros para props", async () => {
       const values = [QuadroKanban.assemble({ id: "q1", nome: "A", materiaId: "m1" })]; dao.listar.mockResolvedValue(values);
       await expect(servico.listar("u1")).resolves.toEqual(values.map(q => q.props)); expect(dao.listar).toHaveBeenCalledExactlyOnceWith("u1");
+    });
+    it("retorna lista vazia quando DAO retorna []", async () => {
+      dao.listar.mockResolvedValue([]);
+
+      await expect(servico.listar("u1")).resolves.toEqual([]);
+      expect(dao.listar).toHaveBeenCalledExactlyOnceWith("u1");
     });
     it("retorna null se DAO não tem resultados", async () => {
       dao.listar.mockResolvedValue(null); await expect(servico.listar("u1")).resolves.toBeNull();

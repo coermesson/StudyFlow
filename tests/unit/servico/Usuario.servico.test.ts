@@ -1,5 +1,6 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { scryptSync } from "node:crypto";
 import { ArquivoDao } from "../../../src/dao/Arquivo.dao";
 import { UsuarioDao } from "../../../src/dao/Usuario.dao";
 import { Usuario } from "../../../src/modelo/Usuario";
@@ -63,6 +64,64 @@ afterEach(() => {
       usuarioDao as unknown as UsuarioDao,
       arquivoDao as unknown as ArquivoDao
     );
+  });
+
+  describe("autenticar", () => {
+    const senha = "senha-correta";
+    const salt = Buffer.from("0123456789abcdef");
+    const senhaHash = (): string => {
+      const hash = scryptSync(senha, salt, 64, { N: 16384, r: 8, p: 1 });
+      return `$scrypt$v1$N=16384,r=8,p=1$${salt.toString("base64url")}$${hash.toString("base64url")}`;
+    };
+
+    it("retorna null e não valida senha quando o email não existe", async () => {
+      usuarioDao.buscarPorEmail.mockResolvedValue(null);
+
+      await expect(servico.autenticar("ausente@email.com", senha)).resolves.toBeNull();
+
+      expect(usuarioDao.buscarPorEmail).toHaveBeenCalledExactlyOnceWith("ausente@email.com");
+      expect(usuarioDao.salvar).not.toHaveBeenCalled();
+      expect(usuarioDao.buscar).not.toHaveBeenCalled();
+      expect(usuarioDao.atualizar).not.toHaveBeenCalled();
+      expect(usuarioDao.delete).not.toHaveBeenCalled();
+      expect(usuarioDao.listar).not.toHaveBeenCalled();
+      expect(arquivoDao.listarIdsPorUsuario).not.toHaveBeenCalled();
+      expect(removerMock).not.toHaveBeenCalled();
+    });
+
+    it("retorna null para senha incorreta", async () => {
+      const usuario = Usuario.assemble("usuario-1", "Teste", "teste@email.com", senhaHash());
+      usuarioDao.buscarPorEmail.mockResolvedValue(usuario);
+
+      await expect(servico.autenticar(usuario.email, "senha-incorreta")).resolves.toBeNull();
+
+      expect(usuarioDao.buscarPorEmail).toHaveBeenCalledExactlyOnceWith(usuario.email);
+      expect(usuarioDao.atualizar).not.toHaveBeenCalled();
+    });
+
+    it("retorna somente os dados públicos para senha válida", async () => {
+      const usuario = Usuario.assemble("usuario-1", "Teste", "teste@email.com", senhaHash());
+      usuarioDao.buscarPorEmail.mockResolvedValue(usuario);
+
+      await expect(servico.autenticar(usuario.email, senha)).resolves.toEqual({
+        id: usuario.id,
+        nome: usuario.nome,
+        email: usuario.email,
+      });
+
+      expect(usuarioDao.buscarPorEmail).toHaveBeenCalledExactlyOnceWith(usuario.email);
+      expect(usuarioDao.atualizar).not.toHaveBeenCalled();
+    });
+
+    it("propaga erro da busca por email", async () => {
+      const erro = new Error("Erro ao buscar usuário por email");
+      usuarioDao.buscarPorEmail.mockRejectedValue(erro);
+
+      await expect(servico.autenticar("teste@email.com", senha)).rejects.toBe(erro);
+
+      expect(usuarioDao.buscarPorEmail).toHaveBeenCalledExactlyOnceWith("teste@email.com");
+      expect(usuarioDao.atualizar).not.toHaveBeenCalled();
+    });
   });
 
   

@@ -5,11 +5,17 @@ import { ListaToDo } from "../../../src/modelo/ListaToDo";
 import { ListaToDoServico } from "../../../src/servico/ListaToDo.servico";
 
 describe("ListaToDoServico", () => {
-  const dao = { salvar: vi.fn(), listar: vi.fn(), buscar: vi.fn(), atualizar: vi.fn(), delete: vi.fn() };
+  const dao = {
+    salvar: vi.fn<ListaToDoDao["salvar"]>(),
+    listar: vi.fn<ListaToDoDao["listar"]>(),
+    buscar: vi.fn<ListaToDoDao["buscar"]>(),
+    atualizar: vi.fn<ListaToDoDao["atualizar"]>(),
+    delete: vi.fn<ListaToDoDao["delete"]>(),
+  } satisfies ListaToDoDao;
   const mocks = { "ListaToDoDao.salvar": dao.salvar, "ListaToDoDao.listar": dao.listar, "ListaToDoDao.buscar": dao.buscar,
     "ListaToDoDao.atualizar": dao.atualizar, "ListaToDoDao.delete": dao.delete };
   let servico: ListaToDoServico;
-  beforeEach(() => { vi.resetAllMocks(); servico = new ListaToDoServico(dao as unknown as ListaToDoDao); });
+  beforeEach(() => { vi.resetAllMocks(); servico = new ListaToDoServico(dao); });
   afterEach(() => {
     console.log(`\nChamadas das dependências: ${expect.getState().currentTestName}`);
     console.table(Object.entries(mocks).map(([dependencia, mock]) => ({ dependencia, chamadas: mock.mock.calls.length })));

@@ -9,8 +9,14 @@ const removerMock = vi.hoisted(() => vi.fn());
 vi.mock("../../../src/util/arquivoArmazenamento", () => ({ arquivoArmazenamento: { remover: removerMock } }));
 
 describe("CursoServico", () => {
-  const cursoDao = { salvar: vi.fn(), buscar: vi.fn(), listar: vi.fn(), atualizar: vi.fn(), delete: vi.fn() };
-  const arquivoDao = { listarIdsPorCurso: vi.fn() };
+  const cursoDao = {
+    salvar: vi.fn<CursoDao["salvar"]>(),
+    buscar: vi.fn<CursoDao["buscar"]>(),
+    listar: vi.fn<CursoDao["listar"]>(),
+    atualizar: vi.fn<CursoDao["atualizar"]>(),
+    delete: vi.fn<CursoDao["delete"]>(),
+  } satisfies CursoDao;
+  const arquivoDao = { listarIdsPorCurso: vi.fn<ArquivoDao["listarIdsPorCurso"]>() } as ArquivoDao;
   const mocks = { "CursoDao.salvar": cursoDao.salvar, "CursoDao.buscar": cursoDao.buscar, "CursoDao.listar": cursoDao.listar,
     "CursoDao.atualizar": cursoDao.atualizar, "CursoDao.delete": cursoDao.delete,
     "ArquivoDao.listarIdsPorCurso": arquivoDao.listarIdsPorCurso, "arquivoArmazenamento.remover": removerMock };
@@ -18,7 +24,7 @@ describe("CursoServico", () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
-    servico = new CursoServico(cursoDao as unknown as CursoDao, arquivoDao as unknown as ArquivoDao);
+    servico = new CursoServico(cursoDao, arquivoDao);
   });
   afterEach(() => {
     console.log(`\nChamadas das dependências: ${expect.getState().currentTestName}`);
@@ -71,6 +77,12 @@ describe("CursoServico", () => {
     it("mapeia cursos para props públicas", async () => {
       const values = [Curso.assemble("c1", "A", "u1"), Curso.assemble("c2", "B", "u1")]; cursoDao.listar.mockResolvedValue(values);
       await expect(servico.listar("u1")).resolves.toEqual(values.map(c => ({ id: c.id, nome: c.nome, usuarioId: c.usuarioId })));
+      expect(cursoDao.listar).toHaveBeenCalledExactlyOnceWith("u1");
+    });
+    it("retorna lista vazia quando DAO retorna []", async () => {
+      cursoDao.listar.mockResolvedValue([]);
+
+      await expect(servico.listar("u1")).resolves.toEqual([]);
       expect(cursoDao.listar).toHaveBeenCalledExactlyOnceWith("u1");
     });
     it("preserva resultado null sem chamadas adicionais", async () => {

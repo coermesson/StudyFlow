@@ -9,13 +9,19 @@ const removerMock = vi.hoisted(() => vi.fn());
 vi.mock("../../../src/util/arquivoArmazenamento", () => ({ arquivoArmazenamento: { remover: removerMock } }));
 
 describe("MateriaServico", () => {
-  const materiaDao = { salvar: vi.fn(), buscar: vi.fn(), listar: vi.fn(), atualizar: vi.fn(), delete: vi.fn() };
-  const arquivoDao = { listarIdsPorMateria: vi.fn() };
+  const materiaDao = {
+    salvar: vi.fn<MateriaDao["salvar"]>(),
+    buscar: vi.fn<MateriaDao["buscar"]>(),
+    listar: vi.fn<MateriaDao["listar"]>(),
+    atualizar: vi.fn<MateriaDao["atualizar"]>(),
+    delete: vi.fn<MateriaDao["delete"]>(),
+  } satisfies MateriaDao;
+  const arquivoDao = { listarIdsPorMateria: vi.fn<ArquivoDao["listarIdsPorMateria"]>() } as ArquivoDao;
   const mocks = { "MateriaDao.salvar": materiaDao.salvar, "MateriaDao.buscar": materiaDao.buscar, "MateriaDao.listar": materiaDao.listar,
     "MateriaDao.atualizar": materiaDao.atualizar, "MateriaDao.delete": materiaDao.delete,
     "ArquivoDao.listarIdsPorMateria": arquivoDao.listarIdsPorMateria, "arquivoArmazenamento.remover": removerMock };
   let servico: MateriaServico;
-  beforeEach(() => { vi.resetAllMocks(); servico = new MateriaServico(materiaDao as unknown as MateriaDao, arquivoDao as unknown as ArquivoDao); });
+  beforeEach(() => { vi.resetAllMocks(); servico = new MateriaServico(materiaDao, arquivoDao); });
   afterEach(() => {
     console.log(`\nChamadas das dependências: ${expect.getState().currentTestName}`);
     console.table(Object.entries(mocks).map(([dependencia, mock]) => ({ dependencia, chamadas: mock.mock.calls.length })));
@@ -60,6 +66,12 @@ describe("MateriaServico", () => {
       const rows = [{ id: "m1", nome: "Física", cursoId: "c1" }]; materiaDao.listar.mockResolvedValue(rows);
       await expect(servico.listar("u1")).resolves.toBe(rows); expect(materiaDao.listar).toHaveBeenCalledExactlyOnceWith("u1");
     });
+    it("retorna lista vazia quando DAO retorna []", async () => {
+      materiaDao.listar.mockResolvedValue([]);
+
+      await expect(servico.listar("u1")).resolves.toEqual([]);
+      expect(materiaDao.listar).toHaveBeenCalledExactlyOnceWith("u1");
+    });
     it("preserva null para lista vazia do DAO", async () => {
       materiaDao.listar.mockResolvedValue(null); await expect(servico.listar("u1")).resolves.toBeNull();
       expect(materiaDao.listar).toHaveBeenCalledTimes(1);
@@ -90,6 +102,17 @@ describe("MateriaServico", () => {
       await expect(servico.deletar("m1", "u1")).resolves.toBe(true);
       expect(arquivoDao.listarIdsPorMateria).toHaveBeenCalledExactlyOnceWith("m1", "u1");
       expect(materiaDao.delete).toHaveBeenCalledExactlyOnceWith("m1", "u1"); expect(removerMock).toHaveBeenCalledExactlyOnceWith(["a1"]);
+    });
+    it("remove arquivos com lista vazia depois de confirmar exclusão", async () => {
+      arquivoDao.listarIdsPorMateria.mockResolvedValue([]);
+      materiaDao.delete.mockResolvedValue(true);
+      removerMock.mockResolvedValue(undefined);
+
+      await expect(servico.deletar("m1", "u1")).resolves.toBe(true);
+
+      expect(arquivoDao.listarIdsPorMateria).toHaveBeenCalledExactlyOnceWith("m1", "u1");
+      expect(materiaDao.delete).toHaveBeenCalledExactlyOnceWith("m1", "u1");
+      expect(removerMock).toHaveBeenCalledExactlyOnceWith([]);
     });
     it("não remove arquivos quando exclusão retorna false", async () => {
       arquivoDao.listarIdsPorMateria.mockResolvedValue([]); materiaDao.delete.mockResolvedValue(false);

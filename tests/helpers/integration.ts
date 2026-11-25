@@ -12,6 +12,7 @@ import { ItemToDoApi } from "../../src/api/ItemToDo.api";
 import { QuadroKanbanApi } from "../../src/api/QuadroKanban.api";
 import { TarefaKanbanApi } from "../../src/api/TarefaKanban.api";
 import conexao from "../../src/util/conexao";
+import { registerDatabaseCleanup } from "./database";
 
 process.env.SESSION_SECRET ??= "studyflow-integration-test-secret";
 process.env.UPLOAD_DIR ??= `${process.cwd()}/test-results/integration-uploads`;
@@ -36,7 +37,7 @@ api.configurarRotasFinais();
 
 export const newAgent = () => request.agent(app);
 export const uniqueEmail = () => `${randomUUID()}@integration.test`;
-export const queryRows = async <T = any>(query: string, values: unknown[] = []) => {
+export const queryRows = async <T>(query: string, values: unknown[] = []): Promise<T> => {
   const [rows] = await conexao.query(query, values);
   return rows as T;
 };
@@ -53,14 +54,16 @@ export async function createOwner(client = newAgent()) {
     const response = await request(app).post("/usuarios").send({
       nome: "Usuário de integração", email, senha: "senha-teste",
     });
-    if (response.status !== 201) throw new Error(`Falha ao criar usuário de fixture: ${response.status}`);
+    if (response.status !== 201) throw new Error(`Falha ao criar usuário de fixture: ${response.status} ${JSON.stringify(response.body)}`);
     id = response.body.id as string;
     if (!id) throw new Error("Resposta de criação não retornou o ID do usuário de fixture");
+    registerOwnerCleanup(id);
     await client.post(`/__test/session/${id}`).expect(204);
     return { id, client };
   } catch (error) {
-    if (id) await queryRows("DELETE FROM Usuario WHERE id = ?", [id]);
-    else await queryRows("DELETE FROM Usuario WHERE email = ?", [email]);
+    await cleanupSafely(async () => {
+      if (id) await deleteOwner(id);
+    });
     throw error;
   }
 }
@@ -69,16 +72,28 @@ export async function createStudyFixture(client = newAgent()) {
   const owner = await createOwner(client);
   try {
     const course = await client.post("/cursos").send({ nome: "Curso fixture" });
-    if (course.status !== 201) throw new Error(`Falha ao criar curso de fixture: ${course.status}`);
+    if (course.status !== 201) throw new Error(`Falha ao criar curso de fixture: ${course.status} ${JSON.stringify(course.body)}`);
     const subject = await client.post("/materias").send({ nome: "Matéria fixture", cursoId: course.body.id });
-    if (subject.status !== 201) throw new Error(`Falha ao criar matéria de fixture: ${subject.status}`);
+    if (subject.status !== 201) throw new Error(`Falha ao criar matéria de fixture: ${subject.status} ${JSON.stringify(subject.body)}`);
     return { ...owner, courseId: course.body.id as string, subjectId: subject.body.id as string };
   } catch (error) {
-    await queryRows("DELETE FROM Usuario WHERE id = ?", [owner.id]);
+    await cleanupSafely(() => deleteOwner(owner.id));
     throw error;
   }
 }
 
 export async function deleteOwner(id: string) {
-  await queryRows("DELETE FROM Usuario WHERE id = ?", [id]);
+  await queryRows<unknown>("DELETE FROM Usuario WHERE id = ?", [id]);
+}
+
+export function registerOwnerCleanup(id: string): void {
+  registerDatabaseCleanup(() => deleteOwner(id));
+}
+
+export async function cleanupSafely(cleanup: () => Promise<unknown>): Promise<void> {
+  try {
+    await cleanup();
+  } catch (error) {
+    console.error("Falha ao limpar dados criados pelo teste de integração", error);
+  }
 }
