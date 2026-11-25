@@ -16,7 +16,9 @@ describe("CursoServico", () => {
     atualizar: vi.fn<CursoDao["atualizar"]>(),
     delete: vi.fn<CursoDao["delete"]>(),
   } satisfies CursoDao;
-  const arquivoDao = { listarIdsPorCurso: vi.fn<ArquivoDao["listarIdsPorCurso"]>() } as ArquivoDao;
+  const arquivoDao = {
+    listarIdsPorCurso: vi.fn<ArquivoDao["listarIdsPorCurso"]>(),
+  } satisfies Pick<ArquivoDao, "listarIdsPorCurso">;
   const mocks = { "CursoDao.salvar": cursoDao.salvar, "CursoDao.buscar": cursoDao.buscar, "CursoDao.listar": cursoDao.listar,
     "CursoDao.atualizar": cursoDao.atualizar, "CursoDao.delete": cursoDao.delete,
     "ArquivoDao.listarIdsPorCurso": arquivoDao.listarIdsPorCurso, "arquivoArmazenamento.remover": removerMock };
@@ -24,7 +26,7 @@ describe("CursoServico", () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
-    servico = new CursoServico(cursoDao, arquivoDao);
+    servico = new CursoServico(cursoDao, arquivoDao as unknown as ArquivoDao);
   });
   afterEach(() => {
     console.log(`\nChamadas das dependências: ${expect.getState().currentTestName}`);

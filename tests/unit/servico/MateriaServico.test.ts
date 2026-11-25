@@ -16,12 +16,17 @@ describe("MateriaServico", () => {
     atualizar: vi.fn<MateriaDao["atualizar"]>(),
     delete: vi.fn<MateriaDao["delete"]>(),
   } satisfies MateriaDao;
-  const arquivoDao = { listarIdsPorMateria: vi.fn<ArquivoDao["listarIdsPorMateria"]>() } as ArquivoDao;
+  const arquivoDao = {
+    listarIdsPorMateria: vi.fn<ArquivoDao["listarIdsPorMateria"]>(),
+  } satisfies Pick<ArquivoDao, "listarIdsPorMateria">;
   const mocks = { "MateriaDao.salvar": materiaDao.salvar, "MateriaDao.buscar": materiaDao.buscar, "MateriaDao.listar": materiaDao.listar,
     "MateriaDao.atualizar": materiaDao.atualizar, "MateriaDao.delete": materiaDao.delete,
     "ArquivoDao.listarIdsPorMateria": arquivoDao.listarIdsPorMateria, "arquivoArmazenamento.remover": removerMock };
   let servico: MateriaServico;
-  beforeEach(() => { vi.resetAllMocks(); servico = new MateriaServico(materiaDao, arquivoDao); });
+  beforeEach(() => {
+    vi.resetAllMocks();
+    servico = new MateriaServico(materiaDao, arquivoDao as unknown as ArquivoDao);
+  });
   afterEach(() => {
     console.log(`\nChamadas das dependências: ${expect.getState().currentTestName}`);
     console.table(Object.entries(mocks).map(([dependencia, mock]) => ({ dependencia, chamadas: mock.mock.calls.length })));
